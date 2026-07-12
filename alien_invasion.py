@@ -1,6 +1,7 @@
 import sys
 import pygame
 from settings import Settings
+from ship import Ship # import new class
 class AlienInvasion:
     """Overall class to manage game assets and behavior."""
 
@@ -20,6 +21,8 @@ class AlienInvasion:
         self.bg = pygame.transform.scale(
             self.bg, (self.settings.screen_width, self.settings.screen_height)
         )
+        # initialize the ship instance
+        self.ship = Ship(self)
         self.running: bool = True
 
 
@@ -31,9 +34,11 @@ class AlienInvasion:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     self._quit_game()
+            # Drawing order: background then ship
 
             # Draw background at the origin
             self.screen.blit(self.bg, (0, 0))
+            self.ship.draw()
             # Make the most recebtly drawn screen visible
             pygame.display.flip()
             #Make sure the game runs at the FPS
