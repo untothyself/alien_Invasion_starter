@@ -16,8 +16,9 @@ class Settings:
         self.assets_dir: Path = self.cwd / 'assets'
         self.bg_file: str = str(self.assets_dir / 'images' / 'starbases_now.png')
 
-        #ship Settings 1
-        self.ship_file: str = str(self.assets.dir / 'images' / 'ship_to_nob.png')
+        # ship Settings
+        # fix: use assets_dir attribute (was incorrectly referenced as self.assets.dir)
+        self.ship_file: str = str(self.assets_dir / 'images' / 'ship_to_nob.png')
         self.ship_width: int=60
         self.ship_height: int=40
         
