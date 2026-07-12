@@ -40,6 +40,7 @@ class AlienInvasion:
         while self.running:
             # Process events
             self._check_events()
+            self.ship.update()
             #update screem
             self._update_screen()
             #Make sure the game runs at the FPS

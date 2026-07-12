@@ -26,7 +26,9 @@ class Settings:
         self.ship_height: int = 40
         #added ship speed
         self.ship_speed: float = 5.0
-        self.bullet_file: str = self._resolve_asset_path("images", ["laser_blast.png"])
+        self.bullet_file: str = self._resolve_asset_path(
+            "images", ["laserBlast.png", "laser_blast.png", "beams.png"]
+        )
         self.laser_sound: str = self._resolve_asset_path(
             "sound", ["laser.mp3", "impactSound.mp3"], fallback_subfolder="sounds"
         )
