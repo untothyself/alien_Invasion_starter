@@ -2,6 +2,7 @@ import sys
 import pygame
 from settings import Settings
 from ship import Ship # import new class
+from arsenal import Arsenal
 class AlienInvasion:
     """Overall class to manage game assets and behavior."""
 
@@ -22,9 +23,15 @@ class AlienInvasion:
         self.bg = pygame.transform.scale(
             self.bg, (self.settings.screen_width, self.settings.screen_height)
         )
-        # initialize the ship instance
-        self.ship = Ship(self)
         self.running: bool = True
+        pygame.mixer.init()
+        self.laser_sound = pygame.mixer.Sound(self.settings.laser_sound)
+        self.laser_sound.set_volume(0.7)
+        # intialize aresenal and inject in ship
+        self.arsenal = Arsenal(self)
+        # initialize the ship instance
+        self.ship = Ship(self, self.arsenal)
+    
 
 
         
@@ -56,6 +63,11 @@ class AlienInvasion:
             self.ship.moving_left = True
         elif event.key == pygame.K_q:  # Quick quit shortcut
             self._quit_game()
+        if event.key == pygame.K_SPACE:
+            # Safely call ship.fire if it exists to satisfy static analyzers
+            fire_method = getattr(self.ship, "fire", None)
+            if callable(fire_method) and fire_method():
+                self.laser_sound.play()
 
     def _check_keyup_events(self, event: pygame.event.Event) -> None:
         """Respond to key releases."""

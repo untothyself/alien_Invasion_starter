@@ -1,5 +1,6 @@
 import pygame
 from typing import TYPE_CHECKING
+from arsenal import Arsenal
 
 # Prevent circular imports for type hinting
 if TYPE_CHECKING:
@@ -7,7 +8,7 @@ if TYPE_CHECKING:
 
 class Ship:
     """A class to manage the ship."""
-    def __init__(self, ai_game: 'AlienInvasion') -> None:
+    def __init__(self, ai_game: 'AlienInvasion', arsenal: Arsenal) -> None:
         """Initialize the ship and set the starting position."""
         self.screen = ai_game.screen
         self.settings = ai_game.settings
@@ -26,6 +27,7 @@ class Ship:
 
         #Store decimal value for horizontal position
         self.x: float = float(self.rect.x)
+        self.arsenal = arsenal
 
         def update(self) -> None:
             """Update the ship position based on movement flags and boundries"""
@@ -35,7 +37,14 @@ class Ship:
 
             # Update rect object from float position
             self.rect.x = int(self.x)
+            #update all active bullets
+            self.arsenal.update_arsenal()
+        def fire(self) -> bool:
+            """Tell the arnsenal to fire a bullet"""
+            return self.arsenal.fire_bullet()
+
 
     def draw(self) -> None:
         """draw the ship at its current location"""
         self.screen.blit(self.image, self.rect)
+        self.arsenal.draw()

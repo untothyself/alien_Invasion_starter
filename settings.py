@@ -26,6 +26,13 @@ class Settings:
         self.ship_height: int = 40
         #added ship speed
         self.ship_speed: float = 5.0
+        self.bullet_file: str = self._resolve_asset_path("images", ["laser_blast.png"])
+        self.laser_sound: str = self._resolve_asset_path("sounds", ["laser.mp3"])
+        # bullet performance and limit
+        self.bullet_speed: float = 7.0
+        self.bullet_width: int = 25
+        self.bullet_height: int = 80
+        self.bullet_amount: int = 5# limit of how many bullets on screen at once.
     
 
     def _find_existing_dir(self, candidates: list[str]) -> Path:
