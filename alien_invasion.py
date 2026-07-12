@@ -16,7 +16,8 @@ class AlienInvasion:
             (self.settings.screen_width, self.settings.screen_height)
         )
         pygame.display.set_caption(self.settings.name)
-        #load and scale the background image to fit the screen
+
+        #background setup
         self.bg = pygame.image.load(self.settings.bg_file)
         self.bg = pygame.transform.scale(
             self.bg, (self.settings.screen_width, self.settings.screen_height)
@@ -42,6 +43,26 @@ class AlienInvasion:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self._quit_game()
+            elif event.type == pygame.KEYDOWN:
+                self._check_keydown_events(event)
+            elif event.type == pygame.KEYUP:
+                self._check_keyup_events(event)
+
+    def _check_keydown_events(self, event: pygame.event.Event) -> None:
+        """Respond to keypresses."""
+        if event.key == pygame.K_RIGHT:
+            self.ship.moving_right = True
+        elif event.key == pygame.K_LEFT:
+            self.ship.moving_left = True
+        elif event.key == pygame.K_q:  # Quick quit shortcut
+            self._quit_game()
+
+    def _check_keyup_events(self, event: pygame.event.Event) -> None:
+        """Respond to key releases."""
+        if event.key == pygame.K_RIGHT:
+            self.ship.moving_right = False
+        elif event.key == pygame.K_LEFT:
+            self.ship.moving_left = False
     
     def _update_screen(self) -> None:
         """update images on screen to flip the new screen"""
