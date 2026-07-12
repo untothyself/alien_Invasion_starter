@@ -27,7 +27,9 @@ class Settings:
         #added ship speed
         self.ship_speed: float = 5.0
         self.bullet_file: str = self._resolve_asset_path("images", ["laser_blast.png"])
-        self.laser_sound: str = self._resolve_asset_path("sounds", ["laser.mp3"])
+        self.laser_sound: str = self._resolve_asset_path(
+            "sound", ["laser.mp3", "impactSound.mp3"], fallback_subfolder="sounds"
+        )
         # bullet performance and limit
         self.bullet_speed: float = 7.0
         self.bullet_width: int = 25
@@ -43,12 +45,20 @@ class Settings:
                 return path
         return self.base_dir / candidates[0]
 
-    def _resolve_asset_path(self, subfolder: str, candidates: list[str]) -> str:
+    def _resolve_asset_path(self, subfolder: str, candidates: list[str], fallback_subfolder: str | None = None) -> str:
         """Return the first existing asset path from a list of candidates."""
         folder = self.assets_dir / subfolder
         for name in candidates:
             candidate = folder / name
             if candidate.exists():
                 return str(candidate)
+
+        if fallback_subfolder is not None:
+            fallback_folder = self.assets_dir / fallback_subfolder
+            for name in candidates:
+                candidate = fallback_folder / name
+                if candidate.exists():
+                    return str(candidate)
+
         return str(folder / candidates[0])
         
