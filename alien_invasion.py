@@ -1,59 +1,63 @@
 import sys
 import pygame
 from settings import Settings
-from ship import Ship # import new class
+from ship import Ship
 from arsenal import Arsenal
-from alien import Alien
+from alien_fleet import AlienFleet
+
 class AlienInvasion:
     """Overall class to manage game assets and behavior."""
 
     def __init__(self) -> None:
-        """Intialize the game and create rescources"""
+        """Initialize the game, load settings, and create game resources."""
         pygame.init()
         self.settings = Settings()
-        #control frame rate
         self.clock = pygame.time.Clock()
-        #set screen dimensions and tit;e from settings
+
+        # Set screen dimensions and title from localized settings
         self.screen = pygame.display.set_mode(
             (self.settings.screen_width, self.settings.screen_height)
         )
         pygame.display.set_caption(self.settings.name)
 
-        #background setup
+        # Load and scale the background image to fit the screen dimensions 
         self.bg = pygame.image.load(self.settings.bg_file)
         self.bg = pygame.transform.scale(
             self.bg, (self.settings.screen_width, self.settings.screen_height)
         )
-        self.running: bool = True
-        pygame.mixer.init()
-        self.laser_sound = pygame.mixer.Sound(self.settings.laser_sound)
-        self.laser_sound.set_volume(0.7)
-        # intialize aresenal and inject in ship
+
+        # Initialize game objects using dependency injection
         self.arsenal = Arsenal(self)
-        # initialize the ship instance
         self.ship = Ship(self, self.arsenal)
-        self.alien = Alien(self, 10, 10)
-    
-
-
         
+        # Replace the single alien with the AlienFleet 
+        self.alien_fleet = AlienFleet(self)
+        
+        # Generate the centered grid of aliens
+        self.alien_fleet.create_fleet()
+
+        self.running: bool = True
+
     def run_game(self) -> None:
         """Start the main loop for the game."""
         while self.running:
-            # Process events
+            # Process user inputs 
             self._check_events()
-            if self.alien.check_edges():
-                self.settings.fleet_direction *= -1
-                self.alien.y += self.settings.fleet_drop_speed
-                self.alien.rect.y = int(self.alien.y)
-            self.ship.update()
-            #update screem
+
+            # Update states (ship and arsenal movement)
+            self.ship.update() 
+            
+            #  Coordinate the entire fleet's movement as a single unit
+            self.alien_fleet.update_fleet()
+
+            # Refresh and render the display 
             self._update_screen()
-            #Make sure the game runs at the FPS
+
+            # Ensure the game runs at the frame rate 
             self.clock.tick(self.settings.FPS)
 
     def _check_events(self) -> None:
-        """respond to keys and mouse"""
+        """Respond to keypresses and mouse events."""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self._quit_game()
@@ -63,46 +67,42 @@ class AlienInvasion:
                 self._check_keyup_events(event)
 
     def _check_keydown_events(self, event: pygame.event.Event) -> None:
-        """Respond to keypresses."""
+        """Respond to specific keypress events."""
         if event.key == pygame.K_RIGHT:
             self.ship.moving_right = True
         elif event.key == pygame.K_LEFT:
             self.ship.moving_left = True
-        elif event.key == pygame.K_q:  # Quick quit shortcut
+        elif event.key == pygame.K_q:
             self._quit_game()
-        if event.key == pygame.K_SPACE:
-            # Safely call ship.fire if it exists to satisfy static analyzers
-            fire_method = getattr(self.ship, "fire", None)
-            if callable(fire_method) and fire_method():
-                self.laser_sound.play()
+        elif event.key == pygame.K_SPACE:
+            # Tell the ship to attempt to fire a bullet 
+            self.ship.fire()
 
     def _check_keyup_events(self, event: pygame.event.Event) -> None:
-        """Respond to key releases."""
+        """Respond to key releases to stop movement flags ."""
         if event.key == pygame.K_RIGHT:
             self.ship.moving_right = False
         elif event.key == pygame.K_LEFT:
             self.ship.moving_left = False
-    
+
     def _update_screen(self) -> None:
-        """update images on screen to flip the new screen"""
-        #draw background
+        """Update images on the screen, and flip to the new screen."""
+        # DRAWING ORDER: Background -> Ship (including arsenal) -> Alien Fleet 
         self.screen.blit(self.bg, (0, 0))
-        #draw ship
         self.ship.draw()
-        self.alien.draw_alien()
-        # make most recent drawn screen visable
         
+        # Draw the programmatically generated fleet 
+        self.alien_fleet.draw()
+
+        # Make the most recently drawn screen visible 
         pygame.display.flip()
-    
-    
 
     def _quit_game(self) -> None:
-        """clean exit game."""
+        """Cleanly exit the game and system process [21]."""
         pygame.quit()
         sys.exit()
-            
 
 if __name__ == '__main__':
-    # Make a game instance, and run the game.
+    # Create a game instance and run it 
     ai = AlienInvasion()
     ai.run_game()
