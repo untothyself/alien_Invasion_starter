@@ -106,3 +106,6 @@ class AlienFleet:
             if alien.rect.bottom >= self.settings.screen_height:
                 return True
         return False
+    def check_destroyed_status(self) -> bool:
+        """Return True if all aliens in the fleet have been removed."""
+        return not self.fleet
