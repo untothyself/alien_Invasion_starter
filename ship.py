@@ -47,3 +47,7 @@ class Ship:
         """draw the ship at its current location"""
         self.screen.blit(self.image, self.rect)
         self.arsenal.draw()
+    def center_ship(self) -> None:
+        """Center the ship on the bottom of the screen."""
+        self.rect.midbottom = self.boundaries.midbottom
+        self.x = float(self.rect.x)

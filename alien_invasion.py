@@ -101,6 +101,18 @@ class AlienInvasion:
         """Cleanly exit the game and system process [21]."""
         pygame.quit()
         sys.exit()
+    def _ship_hit(self) -> None:
+        """Respond to the ship being hit by an alien."""
+        # Reset the level for a new attempt
+        self._reset_level()
+        # Recenter the player ship
+        self.ship.center_ship()
+
+    def _reset_level(self) -> None:
+        """Clear existing game objects and regenerate the fleet."""
+        self.ship.arsenal.bullets.empty()
+        self.alien_fleet.fleet.empty()
+        self.alien_fleet.create_fleet()
 
 if __name__ == '__main__':
     # Create a game instance and run it 
