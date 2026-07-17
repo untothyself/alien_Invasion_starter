@@ -4,6 +4,8 @@ from settings import Settings
 from ship import Ship
 from arsenal import Arsenal
 from alien_fleet import AlienFleet
+from game_stats import GameStats
+from time import sleep
 
 class AlienInvasion:
     """Overall class to manage game assets and behavior."""
@@ -39,18 +41,18 @@ class AlienInvasion:
         self.running: bool = True
         pygame.mixer.init()
         self.impact_sound = pygame.mixer.Sound(self.settings.impact_sound)
+        self.stats = GameStats(self)
 
     def run_game(self) -> None:
-        """Start the main loop for the game."""
+        """Main game loop."""
         while self.running:
-            # Process user inputs 
             self._check_events()
-
-            # Update states (ship and arsenal movement)
-            self.ship.update() 
             
-            #  Coordinate the entire fleet's movement as a single unit
-            self.alien_fleet.update_fleet()
+            # Only update movement and collisions if game is active
+            if self.stats.game_active:
+                self.ship.update()
+                self.alien_fleet.update_fleet()
+                self._check_collisions()
 
             # Refresh and render the display 
             self._update_screen()
@@ -104,11 +106,14 @@ class AlienInvasion:
         pygame.quit()
         sys.exit()
     def _ship_hit(self) -> None:
-        """Respond to the ship being hit by an alien."""
-        # Reset the level for a new attempt
-        self._reset_level()
-        # Recenter the player ship
-        self.ship.center_ship()
+        """Respond to ship collision by reducing lives or ending game."""
+        if self.stats.ships_left > 0:
+            self.stats.ships_left -= 1
+            self._reset_level()
+            self.ship.center_ship()
+            sleep(0.5) # Pause to let the player react
+        else:
+            self.stats.game_active = False # Trigger Game Over stat
 
     def _reset_level(self) -> None:
         """Clear existing game objects and regenerate the fleet."""

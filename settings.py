@@ -30,7 +30,7 @@ class Settings:
             "images", ["laserBlast.png", "laser_blast.png", "beams.png"]
         )
         self.laser_sound: str = self._resolve_asset_path(
-            "sound", ["laser.mp3", "impactSound.mp3"], fallback_subfolder="sounds"
+            "sound", ["laser.mp3", "impactSound.mp3"], fallback_subfolder="sound"
         )
         # bullet performance and limit
         self.bullet_speed: float = 7.0
@@ -44,7 +44,8 @@ class Settings:
         self.fleet_speed: float = 2.0 
         self.fleet_direction: int = 1 #1= right, -1 = left
         self.fleet_drop_speed: int = 10 
-        self.impact_sound: str = self._resolve_asset_path("sounds", ["impact.mp3"])
+        self.impact_sound: str = self._resolve_asset_path("sound", ["impactSound.mp3"])
+        self.starting_ship_count: int = 3
     
 
     def _find_existing_dir(self, candidates: list[str]) -> Path:
