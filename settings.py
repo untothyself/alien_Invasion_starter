@@ -42,6 +42,8 @@ class Settings:
         self.alien_w: int = 40
         self.alien_h: int = 40
         self.fleet_speed: float = 2.0 
+        self.fleet_direction: int = 1 #1= right, -1 = left
+        self.fleet_drop_speed: int = 10 
     
 
     def _find_existing_dir(self, candidates: list[str]) -> Path:

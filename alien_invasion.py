@@ -42,6 +42,10 @@ class AlienInvasion:
         while self.running:
             # Process events
             self._check_events()
+            if self.alien.check_edges():
+                self.settings.fleet_direction *= -1
+                self.alien.y += self.settings.fleet_drop_speed
+                self.alien.rect.y = int(self.alien.y)
             self.ship.update()
             #update screem
             self._update_screen()
