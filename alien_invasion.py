@@ -37,6 +37,8 @@ class AlienInvasion:
         self.alien_fleet.create_fleet()
 
         self.running: bool = True
+        pygame.mixer.init()
+        self.impact_sound = pygame.mixer.Sound(self.settings.impact_sound)
 
     def run_game(self) -> None:
         """Start the main loop for the game."""
@@ -113,7 +115,23 @@ class AlienInvasion:
         self.ship.arsenal.bullets.empty()
         self.alien_fleet.fleet.empty()
         self.alien_fleet.create_fleet()
+    def _check_collisions(self) -> None:
+        """Manage interactions between game entities."""
+        # Detect many-to-many collisions between bullets and aliens
+        collisions = pygame.sprite.groupcollide(
+            self.ship.arsenal.bullets, self.alien_fleet.fleet, True, True
+        )
+        
+        if collisions:
+            self.impact_sound.play()
 
+        # Check if any alien hit the ship (one-to-many)
+        if pygame.sprite.spritecollideany(self.ship, self.alien_fleet.fleet):
+            self._ship_hit()
+        
+        # Check if any alien reached the bottom
+        elif self.alien_fleet.check_fleet_bottom():
+            self._ship_hit()
 if __name__ == '__main__':
     # Create a game instance and run it 
     ai = AlienInvasion()

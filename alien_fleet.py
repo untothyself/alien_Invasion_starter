@@ -100,4 +100,9 @@ class AlienFleet:
         """Draw all aliens currently in the fleet group to the screen."""
         for alien in self.fleet.sprites():
             alien.draw_alien()
-
+    def check_fleet_bottom(self) -> bool:
+        """Return True if any alien has reached the bottom of the screen."""
+        for alien in self.fleet.sprites():
+            if alien.rect.bottom >= self.settings.screen_height:
+                return True
+        return False

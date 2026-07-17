@@ -44,6 +44,7 @@ class Settings:
         self.fleet_speed: float = 2.0 
         self.fleet_direction: int = 1 #1= right, -1 = left
         self.fleet_drop_speed: int = 10 
+        self.impact_sound: str = self._resolve_asset_path("sounds", ["impact.mp3"])
     
 
     def _find_existing_dir(self, candidates: list[str]) -> Path:
