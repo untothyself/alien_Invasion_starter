@@ -37,6 +37,11 @@ class Settings:
         self.bullet_width: int = 25
         self.bullet_height: int = 80
         self.bullet_amount: int = 5# limit of how many bullets on screen at once.
+        #alien settings
+        self.alien_file: str = self._resolve_asset_path("images", ["enemy_4.png"])
+        self.alien_w: int = 40
+        self.alien_h: int = 40
+        self.fleet_speed: float = 2.0 
     
 
     def _find_existing_dir(self, candidates: list[str]) -> Path:

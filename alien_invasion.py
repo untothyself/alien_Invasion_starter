@@ -3,6 +3,7 @@ import pygame
 from settings import Settings
 from ship import Ship # import new class
 from arsenal import Arsenal
+from alien import Alien
 class AlienInvasion:
     """Overall class to manage game assets and behavior."""
 
@@ -31,6 +32,7 @@ class AlienInvasion:
         self.arsenal = Arsenal(self)
         # initialize the ship instance
         self.ship = Ship(self, self.arsenal)
+        self.alien = Alien(self, 10, 10)
     
 
 
@@ -83,7 +85,9 @@ class AlienInvasion:
         self.screen.blit(self.bg, (0, 0))
         #draw ship
         self.ship.draw()
+        self.alien.draw_alien()
         # make most recent drawn screen visable
+        
         pygame.display.flip()
     
     
