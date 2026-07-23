@@ -34,7 +34,7 @@ class Alien(Sprite):
 
     def update(self) -> None:
         """Move the alien horizontally based on fleet coordination."""
-        self.x += self.settings.fleet_speed * self.fleet.fleet_direction
+        self.x += self.settings.alien_speed * self.fleet.fleet_direction
         self.rect.x = int(self.x)
 
     def draw_alien(self) -> None:

@@ -119,7 +119,7 @@ class AlienInvasion:
         pygame.display.flip()
 
     def _quit_game(self) -> None:
-        """Cleanly exit the game and system process [21]."""
+        """Cleanly exit the game and system process"""
         pygame.quit()
         sys.exit()
     def _ship_hit(self) -> None:
