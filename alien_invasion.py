@@ -5,6 +5,7 @@ from ship import Ship
 from arsenal import Arsenal
 from alien_fleet import AlienFleet
 from game_stats import GameStats
+from button import Button
 from time import sleep
 
 class AlienInvasion:
@@ -42,6 +43,7 @@ class AlienInvasion:
         pygame.mixer.init()
         self.impact_sound = pygame.mixer.Sound(self.settings.impact_sound)
         self.stats = GameStats(self)
+        self.play_button = Button(self, "Play")
 
     def run_game(self) -> None:
         """Main game loop."""
@@ -69,18 +71,29 @@ class AlienInvasion:
                 self._check_keydown_events(event)
             elif event.type == pygame.KEYUP:
                 self._check_keyup_events(event)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                self._check_play_button(mouse_pos)
+
+    def _check_play_button(self, mouse_pos: tuple[int, int]) -> None:
+        """Start a new game when the player clicks Play."""
+        if self.play_button.check_clicked(mouse_pos) and not self.stats.game_active:
+            self.stats.game_active = True
+            pygame.mouse.set_visible(False) # Hide the cursor
+            self._reset_level()
 
     def _check_keydown_events(self, event: pygame.event.Event) -> None:
         """Respond to specific keypress events."""
-        if event.key == pygame.K_RIGHT:
-            self.ship.moving_right = True
-        elif event.key == pygame.K_LEFT:
-            self.ship.moving_left = True
-        elif event.key == pygame.K_q:
-            self._quit_game()
-        elif event.key == pygame.K_SPACE:
-            # Tell the ship to attempt to fire a bullet 
-            self.ship.fire()
+        if self.stats.game_active:
+            if event.key == pygame.K_RIGHT:
+                self.ship.moving_right = True
+            elif event.key == pygame.K_LEFT:
+                self.ship.moving_left = True
+            elif event.key == pygame.K_q:
+                self._quit_game()
+            elif event.key == pygame.K_SPACE:
+                # Tell the ship to attempt to fire a bullet 
+                self.ship.fire()
 
     def _check_keyup_events(self, event: pygame.event.Event) -> None:
         """Respond to key releases to stop movement flags ."""
@@ -98,6 +111,10 @@ class AlienInvasion:
         # Draw the programmatically generated fleet 
         self.alien_fleet.draw()
 
+        # Draw the Play button when the game is inactive
+        if not self.stats.game_active:
+            self.play_button.draw_button()
+
         # Make the most recently drawn screen visible 
         pygame.display.flip()
 
@@ -114,6 +131,7 @@ class AlienInvasion:
             sleep(0.5) # Pause to let the player react
         else:
             self.stats.game_active = False # Trigger Game Over stat
+            pygame.mouse.set_visible(True)
 
     def _reset_level(self) -> None:
         """Clear existing game objects and regenerate the fleet."""

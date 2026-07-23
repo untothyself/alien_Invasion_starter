@@ -9,4 +9,4 @@ class GameStats:
         """Initialize statistics based on game settings."""
         self.settings = ai_game.settings
         self.ships_left: int = self.settings.starting_ship_count
-        self.game_active: bool = True
+        self.game_active: bool = False
