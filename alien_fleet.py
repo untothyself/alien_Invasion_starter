@@ -1,111 +1,114 @@
-import pygame
-from alien import Alien
 from typing import TYPE_CHECKING
+
+import pygame
+
+from alien import Alien
 
 if TYPE_CHECKING:
     from alien_invasion import AlienInvasion
 
-class AlienFleet:
-    """A class to manage the entire alien fleet and its movement."""
 
-    def __init__(self, ai_game: 'AlienInvasion') -> None:
-        """Initialize the fleet and its movement settings."""
+class AlienFleet:
+    """Create, move, and inspect the alien fleet."""
+
+    def __init__(self, ai_game: "AlienInvasion") -> None:
+        """Initialize an empty alien fleet."""
         self.game = ai_game
         self.settings = ai_game.settings
         self.fleet = pygame.sprite.Group()
-        
-        # Initialize fleet direction from settings (1 for right, -1 for left)
         self.fleet_direction: int = self.settings.fleet_direction
 
     def create_fleet(self) -> None:
-        """Coordinate the calculation and generation of the centered grid of aliens."""
-        # Determine how many aliens fit based on screen and alien dimensions
-        fleet_w, fleet_h = self._calculate_fleet_size()
-        
-        # Calculate centering offsets for the grid
-        x_offset, y_offset = self._calculate_offsets(fleet_w, fleet_h)
-        
-        # Generate the actual fleet objects in a rectangle pattern
-        self._create_rectangle_fleet(fleet_w, fleet_h, x_offset, y_offset)
+        """Generate a centered grid of aliens."""
+        self.fleet_direction = self.settings.fleet_direction
+        fleet_width, fleet_height = self._calculate_fleet_size()
+        x_offset, y_offset = self._calculate_offsets(
+            fleet_width, fleet_height
+        )
+        self._create_rectangle_fleet(
+            fleet_width, fleet_height, x_offset, y_offset
+        )
 
     def _calculate_fleet_size(self) -> tuple[int, int]:
-        """Determine the number of aliens that fit horizontally and vertically."""
-        # Calculate horizontal count based on screen width
-        width_count = self.settings.screen_width // self.settings.alien_w
-        
-        # Calculate vertical count, filling only the top half of the screen
-        available_h = self.settings.screen_height // 2
-        height_count = available_h // self.settings.alien_h
-        
-        # Adjust counts to ensure they are odd to facilitate better centering 
-        width_count -= 1 if width_count % 2 == 0 else 2 
-        height_count -= 1 if height_count % 2 == 0 else 2
-        
-        return int(width_count), int(height_count)
+        """Calculate how many grid spaces fit in the top half."""
+        width_count = max(
+            3, self.settings.screen_width // self.settings.alien_w
+        )
+        height_count = max(
+            3,
+            (self.settings.screen_height // 2) // self.settings.alien_h,
+        )
 
-    def _calculate_offsets(self, fleet_w: int, fleet_h: int) -> tuple[int, int]:
-        """Determine centering offsets for the fleet grid."""
-        # Horizontal space occupied by the fleet
-        horizontal_space = fleet_w * self.settings.alien_w
-        x_offset = (self.settings.screen_width - horizontal_space) // 2
-        
-        # Vertical space occupied by the fleet in the top half of the screen
-        half_screen_h = self.settings.screen_height // 2
-        vertical_space = fleet_h * self.settings.alien_h
-        y_offset = (half_screen_h - vertical_space) // 2
-        
-        return int(x_offset), int(y_offset)
+        # Odd counts keep the spaced fleet centered.
+        if width_count % 2 == 0:
+            width_count -= 1
+        if height_count % 2 == 0:
+            height_count -= 1
 
-    def _create_rectangle_fleet(self, fleet_w: int, fleet_h: int, x_off: int, y_off: int) -> None:
-        """Use nested loops to place individual aliens with proper spacing."""
-        for row in range(fleet_h):
-            for col in range(fleet_w):
-                # Skip even indices to create gaps between individual aliens
-                if row % 2 == 0 or col % 2 == 0:
-                    continue
-                
-                # Calculate current position including the initial offset 
-                curr_x = col * self.settings.alien_w + x_off
-                curr_y = row * self.settings.alien_h + y_off
-                
-                # Create and add the alien to the group 
-                new_alien = Alien(self, curr_x, curr_y)
-                self.fleet.add(new_alien)
+        return width_count, height_count
+
+    def _calculate_offsets(
+        self, fleet_width: int, fleet_height: int
+    ) -> tuple[int, int]:
+        """Calculate offsets that center the fleet."""
+        horizontal_space = fleet_width * self.settings.alien_w
+        x_offset = (
+            self.settings.screen_width - horizontal_space
+        ) // 2
+
+        half_screen_height = self.settings.screen_height // 2
+        vertical_space = fleet_height * self.settings.alien_h
+        y_offset = (half_screen_height - vertical_space) // 2
+
+        return x_offset, y_offset
+
+    def _create_rectangle_fleet(
+        self,
+        fleet_width: int,
+        fleet_height: int,
+        x_offset: int,
+        y_offset: int,
+    ) -> None:
+        """Place aliens in alternating grid spaces."""
+        for row in range(1, fleet_height, 2):
+            for column in range(1, fleet_width, 2):
+                current_x = (
+                    column * self.settings.alien_w + x_offset
+                )
+                current_y = row * self.settings.alien_h + y_offset
+                self.fleet.add(Alien(self, current_x, current_y))
 
     def update_fleet(self) -> None:
-        """Respond to edge hits, then drop and update all aliens in the group."""
-        # Check if any member of the fleet has hit a screen edge 
+        """Move the fleet and reverse it at a screen edge."""
         if self._check_fleet_edges():
             self._drop_fleet()
-            self.fleet_direction *= -1  # Reverse direction for the whole group 
-            
-        # Call the update method on the entire sprite group 
+            self.fleet_direction *= -1
+
         self.fleet.update()
 
     def _check_fleet_edges(self) -> bool:
-        """Return True if any alien in the fleet has hit a boundary."""
-        for alien in self.fleet.sprites():
-            if alien.check_edges():
-                return True  # Break early once any single alien hits an edge 
-        return False
+        """Return True when any alien reaches a side edge."""
+        return any(
+            alien.check_edges() for alien in self.fleet.sprites()
+        )
 
     def _drop_fleet(self) -> None:
-        """Shift every alien in the fleet downward."""
+        """Move every alien downward."""
         for alien in self.fleet.sprites():
-            # Update the internal float position and then sync the rect
             alien.y += self.settings.fleet_drop_speed
             alien.rect.y = int(alien.y)
 
     def draw(self) -> None:
-        """Draw all aliens currently in the fleet group to the screen."""
-        for alien in self.fleet.sprites():
-            alien.draw_alien()
+        """Draw every alien in the fleet."""
+        self.fleet.draw(self.game.screen)
+
     def check_fleet_bottom(self) -> bool:
-        """Return True if any alien has reached the bottom of the screen."""
-        for alien in self.fleet.sprites():
-            if alien.rect.bottom >= self.settings.screen_height:
-                return True
-        return False
+        """Return True when an alien reaches the screen bottom."""
+        return any(
+            alien.rect.bottom >= self.settings.screen_height
+            for alien in self.fleet.sprites()
+        )
+
     def check_destroyed_status(self) -> bool:
-        """Return True if all aliens in the fleet have been removed."""
-        return not self.fleet
+        """Return True when no aliens remain."""
+        return len(self.fleet) == 0

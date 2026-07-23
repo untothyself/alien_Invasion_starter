@@ -1,12 +1,15 @@
-import pygame
-from bullet import Bullet
 from typing import TYPE_CHECKING
+
+import pygame
+
+from bullet import Bullet
 
 if TYPE_CHECKING:
     from alien_invasion import AlienInvasion
 
+
 class Arsenal:
-    """A class to manage the ship's armament loadout."""
+    """Manage all bullets fired by the ship."""
 
     def __init__(self, ai_game: 'AlienInvasion') -> None:
         self.ai_game = ai_game
@@ -14,23 +17,20 @@ class Arsenal:
         self.bullets = pygame.sprite.Group()
 
     def update_arsenal(self) -> None:
-        """Update bullet positions and remove off-screen bullets."""
+        """Move bullets and remove bullets that leave the screen."""
         self.bullets.update()
-        
-        # Clean up bullets that moved off the top of the screen
         for bullet in self.bullets.copy():
             if bullet.rect.bottom <= 0:
-                self.bullets.remove(bullet)
+                bullet.kill()
 
     def fire_bullet(self) -> bool:
-        """Create a new bullet and add it to the bullets group if limit allows."""
-        if len(self.bullets) < self.settings.bullet_amount:
-            new_bullet = Bullet(self.ai_game)
-            self.bullets.add(new_bullet)
-            return True
-        return False
+        """Create a bullet when the on-screen limit allows it."""
+        if len(self.bullets) >= self.settings.bullet_amount:
+            return False
+
+        self.bullets.add(Bullet(self.ai_game))
+        return True
 
     def draw(self) -> None:
-        """Draw all bullets in the arsenal."""
-        for bullet in self.bullets.sprites():
-            bullet.draw_bullet()
+        """Draw all active bullets."""
+        self.bullets.draw(self.ai_game.screen)

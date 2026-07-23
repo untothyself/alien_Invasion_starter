@@ -1,6 +1,7 @@
+from typing import TYPE_CHECKING
+
 import pygame
 from pygame.sprite import Sprite
-from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from alien_fleet import AlienFleet
@@ -16,27 +17,33 @@ class Alien(Sprite):
         self.screen = fleet.game.screen
         self.boundaries = self.screen.get_rect()
 
-        self.image = pygame.image.load(self.settings.alien_file)
-        self.image = pygame.transform.scale(
-            self.image, (self.settings.alien_w, self.settings.alien_h)
-        )
+        self.image = self._load_image()
         self.rect = self.image.get_rect()
-
-        # Position synchronization
-        self.x = x
-        self.y = y
+        self.x: float = x
+        self.y: float = y
         self.rect.x = int(self.x)
         self.rect.y = int(self.y)
 
+    def _load_image(self) -> pygame.Surface:
+        """Load the alien image or create a fallback alien shape."""
+        size = (self.settings.alien_w, self.settings.alien_h)
+        try:
+            image = pygame.image.load(self.settings.alien_file).convert_alpha()
+            return pygame.transform.scale(image, size)
+        except (FileNotFoundError, pygame.error):
+            image = pygame.Surface(size, pygame.SRCALPHA)
+            pygame.draw.ellipse(image, self.settings.alien_color, image.get_rect())
+            return image
+
     def check_edges(self) -> bool:
-        """Return True if alien is at the left or right edge."""
-        return (self.rect.right >= self.boundaries.right or self.rect.left <= 0)
+        """Return True when the alien reaches either horizontal edge."""
+        return self.rect.right >= self.boundaries.right or self.rect.left <= 0
 
     def update(self) -> None:
-        """Move the alien horizontally based on fleet coordination."""
+        """Move the alien horizontally with the fleet."""
         self.x += self.settings.alien_speed * self.fleet.fleet_direction
         self.rect.x = int(self.x)
 
     def draw_alien(self) -> None:
-        """Draw the alien to the screen."""
+        """Draw the alien."""
         self.screen.blit(self.image, self.rect)

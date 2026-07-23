@@ -1,53 +1,69 @@
-import pygame
 from typing import TYPE_CHECKING
+
+import pygame
+from pygame.sprite import Sprite
+
 from arsenal import Arsenal
 
-# Prevent circular imports for type hinting
 if TYPE_CHECKING:
     from alien_invasion import AlienInvasion
 
-class Ship:
-    """A class to manage the ship."""
+
+class Ship(Sprite):
+    """Manage the player's ship."""
+
     def __init__(self, ai_game: 'AlienInvasion', arsenal: Arsenal) -> None:
-        """Initialize the ship and set the starting position."""
+        """Initialize the ship and place it at the bottom center."""
+        super().__init__()
         self.screen = ai_game.screen
         self.settings = ai_game.settings
-        self.boundaries = ai_game.screen.get_rect()
-        # Load the ship image to the size defined in settings
-        self.image = pygame.image.load(self.settings.ship_file)
-        self.image = pygame.transform.scale(self.image, (self.settings.ship_width, self.settings.ship_height))
-        self.rect = self.image.get_rect()
-
-        # Start each ship at the bottom of the center
-        self.rect.midbottom = self.boundaries.midbottom
-
-        # Movement flags
-        self.moving_right: bool = False
-        self.moving_left: bool = False
-
-        #Store decimal value for horizontal position
-        self.x: float = float(self.rect.x)
+        self.boundaries = self.screen.get_rect()
         self.arsenal = arsenal
 
+        self.image = self._load_image()
+        self.rect = self.image.get_rect()
+        self.rect.midbottom = self.boundaries.midbottom
+
+        self.moving_right: bool = False
+        self.moving_left: bool = False
+        self.x: float = float(self.rect.x)
+
+    def _load_image(self) -> pygame.Surface:
+        """Load the ship image or create a simple fallback ship."""
+        size = (self.settings.ship_width, self.settings.ship_height)
+        try:
+            image = pygame.image.load(self.settings.ship_file).convert_alpha()
+            return pygame.transform.scale(image, size)
+        except (FileNotFoundError, pygame.error):
+            image = pygame.Surface(size, pygame.SRCALPHA)
+            points = [(size[0] // 2, 0), (0, size[1]), (size[0], size[1])]
+            pygame.draw.polygon(image, self.settings.ship_color, points)
+            return image
+
     def update(self) -> None:
-        """Update the ship position based on movement flags and boundaries."""
-        if self.moving_right and self.rect.right < self.boundaries.right:
+        """Move the ship and update its bullets."""
+        if self.moving_right:
             self.x += self.settings.ship_speed
-        if self.moving_left and self.rect.left > 0:
+        if self.moving_left:
             self.x -= self.settings.ship_speed
 
+        max_x = self.boundaries.right - self.rect.width
+        self.x = max(0.0, min(self.x, float(max_x)))
         self.rect.x = int(self.x)
         self.arsenal.update_arsenal()
 
     def fire(self) -> bool:
-        """Tell the arsenal to fire a bullet."""
+        """Ask the arsenal to create a bullet."""
         return self.arsenal.fire_bullet()
 
     def draw(self) -> None:
-        """draw the ship at its current location"""
+        """Draw the ship and all active bullets."""
         self.screen.blit(self.image, self.rect)
         self.arsenal.draw()
+
     def center_ship(self) -> None:
-        """Center the ship on the bottom of the screen."""
+        """Center the ship and stop its movement."""
         self.rect.midbottom = self.boundaries.midbottom
         self.x = float(self.rect.x)
+        self.moving_right = False
+        self.moving_left = False
