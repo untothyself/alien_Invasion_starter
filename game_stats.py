@@ -10,3 +10,8 @@ class GameStats:
         self.settings = ai_game.settings
         self.ships_left: int = self.settings.starting_ship_count
         self.game_active: bool = False
+        
+        # Scoring attributes
+        self.score: int = 0
+        self.max_score: int = 0
+        self.high_score: int = 0
