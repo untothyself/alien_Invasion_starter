@@ -46,7 +46,15 @@ class Settings:
         self.fleet_drop_speed: int = 10 
         self.impact_sound: str = self._resolve_asset_path("sound", ["impactSound.mp3"])
         self.starting_ship_count: int = 3
-    
+        # button settings
+        self.button_w = 200
+        self.button_h = 50
+        self.button_color = (0, 135, 0) #green
+
+        self.text_color = (255, 255, 255) #white
+        self.button_font_size = 48
+        self.HUD_font_size = 20
+        self.font_file = Path.cwd() / 'Assets' / 'Fonts'/ 'Silkscreen'
 
     def _find_existing_dir(self, candidates: list[str]) -> Path:
         """Return the first existing asset directory from the given candidates."""
